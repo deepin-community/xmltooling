@@ -1,0 +1,15 @@
+#!/bin/sh -ex
+
+
+./configure --disable-doxygen-doc
+
+# Work around the make dependency:
+touch xmltooling/libxmltooling.la
+# Replace the linker option:
+make xmltoolingtest_LDADD="$(pkg-config --libs xmltooling xml-security-c openssl xerces-c log4shib)" VERBOSE=1 -C xmltoolingtest check || ret=$?
+
+if [ "$AUTOPKGTEST_ARTIFACTS" ]; then
+    mv xmltoolingtest/*.log xmltoolingtest/*.trs "$AUTOPKGTEST_ARTIFACTS"
+fi
+
+exit $ret

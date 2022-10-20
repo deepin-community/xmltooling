@@ -1,0 +1,6 @@
+Depends: libxmltooling-dev,
+  cxxtest,  zlib1g-dev,
+  g++, make, pkg-config
+Restrictions: allow-stderr,
+  needs-internet,
+Tests: xmltoolingtest

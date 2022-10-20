@@ -1,0 +1,87 @@
+Source: xmltooling
+Section: libs
+Priority: optional
+Maintainer: Debian Shib Team <pkg-shibboleth-devel@alioth-lists.debian.net>
+Uploaders:
+ Ferenc Wágner <wferi@debian.org>,
+ Etienne Dysli Metref <etienne.dysli-metref@switch.ch>,
+Build-Depends:
+ cxxtest,
+ debhelper-compat (= 12),
+ libboost-dev,
+ libcurl4-openssl-dev,
+ liblog4shib-dev (>= 2~),
+ libssl-dev,
+ libxerces-c-dev,
+ libxml-security-c-dev (>= 2~),
+ pkg-config,
+ zlib1g-dev,
+Build-Depends-Indep:
+ doxygen,
+ graphviz,
+Standards-Version: 4.5.1
+Rules-Requires-Root: no
+Homepage: https://wiki.shibboleth.net/confluence/display/OpenSAML/XMLTooling-C
+Vcs-Git: https://salsa.debian.org/shib-team/xmltooling.git
+Vcs-Browser: https://salsa.debian.org/shib-team/xmltooling
+X-Common-Description: The XMLTooling library contains generic XML parsing and
+ processing classes based on the Xerces-C DOM.  It adds more powerful facilities
+ for declaring element- and type-specific API and implementation classes, as
+ well as signing and encryption support.
+
+Package: libxmltooling10
+Architecture: any
+Multi-Arch: same
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Description: C++ XML parsing library with encryption support (runtime)
+ ${S:X-Common-Description}
+ .
+ This package contains the files necessary for running applications that
+ use the XMLTooling library.
+
+Package: libxmltooling-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends:
+ libboost-dev,
+ libcurl4-openssl-dev,
+ liblog4shib-dev (>= 2~),
+ libssl-dev,
+ libxerces-c-dev,
+ libxml-security-c-dev (>= 2~),
+ libxmltooling10 (= ${binary:Version}),
+ ${misc:Depends},
+Suggests:
+ libxmltooling-doc (= ${source:Version}),
+Description: C++ XML parsing library with encryption support (development)
+ ${S:X-Common-Description}
+ .
+ This package contains the headers and other necessary files to build
+ applications or libraries that use or extend the XMLTooling library.
+
+Package: xmltooling-schemas
+Section: text
+Architecture: all
+Multi-Arch: foreign
+Depends:
+ ${misc:Depends},
+Description: XML schemas for XMLTooling
+ ${S:X-Common-Description}
+ .
+ This package contains the XML schema files used by the XMLTooling
+ library.
+
+Package: libxmltooling-doc
+Section: doc
+Architecture: all
+Multi-Arch: foreign
+Depends:
+ ${misc:Depends},
+Description: C++ XML parsing library with encryption support (API docs)
+ ${S:X-Common-Description}
+ .
+ This package contains the XMLTooling library API documentation generated
+ by Doxygen.

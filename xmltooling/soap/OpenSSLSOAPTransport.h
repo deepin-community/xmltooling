@@ -1,0 +1,78 @@
+/**
+ * Licensed to the University Corporation for Advanced Internet
+ * Development, Inc. (UCAID) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * UCAID licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the
+ * License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
+/**
+ * @file xmltooling/soap/OpenSSLSOAPTransport.h
+ * 
+ * Encapsulates OpenSSL-capable SOAP transport layer.
+ */
+
+#if !defined(__xmltooling_opensslsoaptrans_h__) && !defined(XMLTOOLING_NO_XMLSEC)
+#define __xmltooling_opensslsoaptrans_h__
+
+#include <xmltooling/soap/SOAPTransport.h>
+
+#include <openssl/ssl.h>
+
+namespace xmltooling {
+    
+    /**
+     * Encapsulates OpenSSL-capable SOAP transport layer.
+     */
+    class XMLTOOL_API OpenSSLSOAPTransport : public virtual SOAPTransport 
+    {
+    protected:
+        OpenSSLSOAPTransport();
+    public:
+        virtual ~OpenSSLSOAPTransport();
+        
+        /** OpenSSL context callback for manipulating credentials and validation behavior. */
+        typedef bool (*ssl_ctx_callback_fn)(OpenSSLSOAPTransport* transport, SSL_CTX* ssl_ctx, void* userptr);
+
+        /**
+         * Set a callback function to invoke against the SSL_CTX before the handshake.
+         * 
+         * @param fn        callback function
+         * @param userptr   a caller-supplied value to pass to the callback function
+         * @return true iff the callback was set
+         */
+        virtual bool setSSLCallback(ssl_ctx_callback_fn fn, void* userptr=nullptr)=0;
+        
+        /**
+         * Set an expression identifying the cipher suites to enable using OpenSSL syntax.
+         *
+         * <p>Note this does not include TLS 1.3 ciphers.</p>
+         *
+         * @param cipherlist cipher suite expression/list
+         * @return true iff the ciphers were set
+         */
+        virtual bool setCipherSuites(const char* cipherlist)=0;
+
+        /**
+         * Set indicator that the transport peer has been authenticated.
+         * 
+         * @param auth    flag to set
+         */
+        virtual void setAuthenticated(bool auth)=0;
+    };
+
+};
+
+#endif /* __xmltooling_opensslsoaptrans_h__ */

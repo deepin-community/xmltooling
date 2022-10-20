@@ -1,0 +1,92 @@
+/**
+ * Licensed to the University Corporation for Advanced Internet
+ * Development, Inc. (UCAID) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * UCAID licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the
+ * License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
+/**
+ * SOAPSchemaValidators.cpp
+ * 
+ * Schema validators for SOAP schema.
+ */
+
+#include "internal.h"
+#include "exceptions.h"
+#include "soap/SOAP.h"
+#include "validation/Validator.h"
+#include "validation/ValidatorSuite.h"
+
+using namespace soap11;
+using namespace xmltooling;
+using namespace std;
+using xmlconstants::SOAP11ENV_NS;
+
+namespace {
+
+    XMLOBJECTVALIDATOR_SIMPLE(XMLTOOL_DLLLOCAL,Faultstring);
+    XMLOBJECTVALIDATOR_SIMPLE(XMLTOOL_DLLLOCAL,Faultactor);
+
+    BEGIN_XMLOBJECTVALIDATOR(XMLTOOL_DLLLOCAL,Faultcode);
+        XMLOBJECTVALIDATOR_REQUIRE(Faultcode,Code);
+    END_XMLOBJECTVALIDATOR;
+    
+    BEGIN_XMLOBJECTVALIDATOR(XMLTOOL_DLLLOCAL,Fault);
+        XMLOBJECTVALIDATOR_REQUIRE(Fault,Faultcode);
+        XMLOBJECTVALIDATOR_REQUIRE(Fault,Faultstring);
+    END_XMLOBJECTVALIDATOR;
+
+    BEGIN_XMLOBJECTVALIDATOR(XMLTOOL_DLLLOCAL,Envelope);
+        XMLOBJECTVALIDATOR_REQUIRE(Envelope,Body);
+    END_XMLOBJECTVALIDATOR;
+    
+};
+
+#define REGISTER_ELEMENT(namespaceURI,cname) \
+    q=QName(namespaceURI,cname::LOCAL_NAME); \
+    XMLObjectBuilder::registerBuilder(q,new cname##Builder()); \
+    SchemaValidators.registerValidator(q,new cname##SchemaValidator())
+    
+#define REGISTER_TYPE(namespaceURI,cname) \
+    q=QName(namespaceURI,cname::TYPE_NAME); \
+    XMLObjectBuilder::registerBuilder(q,new cname##Builder()); \
+    SchemaValidators.registerValidator(q,new cname##SchemaValidator())
+
+#define REGISTER_ELEMENT_NOVAL(namespaceURI,cname) \
+    q=QName(namespaceURI,cname::LOCAL_NAME); \
+    XMLObjectBuilder::registerBuilder(q,new cname##Builder());
+    
+#define REGISTER_TYPE_NOVAL(namespaceURI,cname) \
+    q=QName(namespaceURI,cname::TYPE_NAME); \
+    XMLObjectBuilder::registerBuilder(q,new cname##Builder());
+
+void soap11::registerSOAPClasses()
+{
+    QName q;
+    REGISTER_ELEMENT_NOVAL(SOAP11ENV_NS,Body);
+    REGISTER_ELEMENT_NOVAL(nullptr,Detail);
+    REGISTER_ELEMENT(SOAP11ENV_NS,Envelope);
+    REGISTER_ELEMENT(SOAP11ENV_NS,Fault);
+    REGISTER_ELEMENT(nullptr,Faultactor);
+    REGISTER_ELEMENT(nullptr,Faultcode);
+    REGISTER_ELEMENT(nullptr,Faultstring);
+    REGISTER_ELEMENT_NOVAL(SOAP11ENV_NS,Header);
+    REGISTER_TYPE_NOVAL(SOAP11ENV_NS,Body);
+    REGISTER_TYPE_NOVAL(SOAP11ENV_NS,Detail);
+    REGISTER_TYPE(SOAP11ENV_NS,Envelope);
+    REGISTER_TYPE(SOAP11ENV_NS,Fault);
+    REGISTER_TYPE_NOVAL(SOAP11ENV_NS,Header);
+}

@@ -1,0 +1,44 @@
+#!/usr/bin/make -f
+
+# Enable compiler hardening flags.
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# Ensure that we link against all needed libraries (cf. Policy 10.2)
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,-z,defs
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+	    PTHREAD_CFLAGS=-pthread PTHREAD_LIBS=-lpthread \
+	    --with-xmlsec
+
+override_dh_auto_build-indep:
+	$(MAKE) doxygen-doc
+	$(MAKE) -C schemas
+
+override_dh_auto_install-indep:
+	$(MAKE) -C doc     DESTDIR="$(CURDIR)/debian/tmp" install
+	$(MAKE) -C schemas DESTDIR="$(CURDIR)/debian/tmp" install
+
+override_dh_auto_test-indep:
+
+override_dh_auto_test-arch:
+	dh_auto_test -- XMLTOOLINGTEST_SKIP_NETWORKED=1
+
+docdir = debian/tmp/usr/share/doc/xmltooling-*
+override_dh_install:
+	cd $(docdir) && \
+	    rm README.txt LICENSE.txt NOTICE.txt OPENSSL.LICENSE LOG4CPP.LICENSE \
+	       CURL.LICENSE
+	# The tag file is unreproducible (it captures the full build path),
+	# but is used as a "stamp" file during the build.
+	cd $(docdir) && rm -f api/xmltooling.tag api/html/*.md5 api/html/*.map
+	dh_install
+
+override_dh_installdocs:
+	dh_installdocs -A doc/README.txt doc/NOTICE.txt
+
+override_dh_missing:
+	dh_missing --fail-missing -Xlibxmltooling.la -Xlibxmltooling-lite.la
