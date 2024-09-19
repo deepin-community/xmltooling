@@ -3,3 +3,4 @@
 # In short: symbols files are not worth providing for Shibboleth.
 no-symbols-control-file usr/lib/*/libxmltooling-lite.so.*
 no-symbols-control-file usr/lib/*/libxmltooling.so.*
+libxmltooling10t64: package-name-doesnt-match-sonames libxmltooling10

@@ -1,7 +1,7 @@
 #!/bin/sh -ex
 
-
-./configure --disable-doxygen-doc
+# Suppress deprecation warnings like in debian/rules:
+./configure CXXFLAGS=-Wno-deprecated-declarations --disable-doxygen-doc
 
 # Work around the make dependency:
 touch xmltooling/libxmltooling.la

@@ -1,1 +1,5 @@
-usr/share/doc/xmltooling-*/api/* usr/share/doc/libxmltooling-doc
+usr/share/doc/xmltooling-*/api/html/*.css  usr/share/doc/libxmltooling-doc/html
+usr/share/doc/xmltooling-*/api/html/*.html usr/share/doc/libxmltooling-doc/html
+usr/share/doc/xmltooling-*/api/html/*.js   usr/share/doc/libxmltooling-doc/html
+usr/share/doc/xmltooling-*/api/html/*.png  usr/share/doc/libxmltooling-doc/html
+usr/share/doc/xmltooling-*/api/html/*.svg  usr/share/doc/libxmltooling-doc/html

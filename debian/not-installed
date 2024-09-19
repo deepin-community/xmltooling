@@ -1,0 +1,11 @@
+usr/lib/*/libxmltooling.la
+usr/lib/*/libxmltooling-lite.la
+usr/share/doc/xmltooling-*/README.txt
+usr/share/doc/xmltooling-*/LICENSE.txt
+usr/share/doc/xmltooling-*/NOTICE.txt
+usr/share/doc/xmltooling-*/OPENSSL.LICENSE
+usr/share/doc/xmltooling-*/LOG4CPP.LICENSE
+usr/share/doc/xmltooling-*/CURL.LICENSE
+usr/share/doc/xmltooling-*/api/xmltooling.tag
+usr/share/doc/xmltooling-*/api/html/*.md5
+usr/share/doc/xmltooling-*/api/html/*.map

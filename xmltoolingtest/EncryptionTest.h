@@ -166,4 +166,9 @@ public:
         preEncrypted("BadKeyInfo/retrievalEmpty.xml", true);
     }
 
+    void testCipherReference()
+    {
+        preEncrypted("BadKeyInfo/CipherReference.xml", true);
+    }
+
 };

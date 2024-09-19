@@ -6,6 +6,11 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 # Ensure that we link against all needed libraries (cf. Policy 10.2)
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,-z,defs
 
+# The Shibboleth project decided to replace the C++ SP code with JAVA
+# remoting, so substantial changes probably won't happen, see
+# https://shibboleth.atlassian.net/wiki/spaces/DEV/pages/2981429255/Service+Provider+V4+Redesign
+export DEB_CXXFLAGS_MAINT_APPEND = -Wno-deprecated-declarations
+
 %:
 	dh $@
 
@@ -27,18 +32,9 @@ override_dh_auto_test-indep:
 override_dh_auto_test-arch:
 	dh_auto_test -- XMLTOOLINGTEST_SKIP_NETWORKED=1
 
-docdir = debian/tmp/usr/share/doc/xmltooling-*
-override_dh_install:
-	cd $(docdir) && \
-	    rm README.txt LICENSE.txt NOTICE.txt OPENSSL.LICENSE LOG4CPP.LICENSE \
-	       CURL.LICENSE
-	# The tag file is unreproducible (it captures the full build path),
-	# but is used as a "stamp" file during the build.
-	cd $(docdir) && rm -f api/xmltooling.tag api/html/*.md5 api/html/*.map
-	dh_install
-
 override_dh_installdocs:
 	dh_installdocs -A doc/README.txt doc/NOTICE.txt
 
-override_dh_missing:
-	dh_missing --fail-missing -Xlibxmltooling.la -Xlibxmltooling-lite.la
+# Work around https://shibboleth.atlassian.net/browse/CPPXT-146
+override_dh_clean:
+	dh_clean -X .bak
