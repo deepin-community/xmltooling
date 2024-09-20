@@ -1,3 +1,9 @@
+xmltooling (3.2.0-3deepin0) unstable; urgency=medium
+
+  * No source change upload against GCC 12.
+
+ -- Tianyu Chen <sweetyfish@deepin.org>  Fri, 20 Sep 2024 12:58:51 +0800
+
 xmltooling (3.2.0-3) unstable; urgency=medium
 
   * [e9c5d46] New patch: CPPXT-151 Wiki migration broke some SecurityHelperTest
