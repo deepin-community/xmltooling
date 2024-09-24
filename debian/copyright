@@ -94,7 +94,7 @@ License: FSF-configure-unlimited
  gives unlimited permission to copy, distribute and modify it.
 
 Files: debian/*
-Copyright: 2008, 2015-2018 Ferenc Wágner <wferi@debian.org>
+Copyright: 2008, 2015-2023 Ferenc Wágner <wferi@debian.org>
   2008-2013 Russ Allbery <rra@debian.org>
 License: Expat
 
