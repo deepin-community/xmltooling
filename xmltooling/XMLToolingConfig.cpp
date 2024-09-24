@@ -75,6 +75,7 @@
 # include <xsec/framework/XSECException.hpp>
 # include <xsec/framework/XSECProvider.hpp>
 # include <xsec/transformers/TXFMBase.hpp>
+# include <xsec/framework/XSECURIResolver.hpp>
 #endif
 
 using namespace soap11;
@@ -116,7 +117,7 @@ namespace {
 #endif
     static ptr_vector<Mutex> g_openssl_locks;
 
-    extern "C" void openssl_locking_callback(int mode,int n,const char *file,int line)
+    extern "C" void openssl_locking_callback(int mode, int n, const char *, int)
     {
         if (mode & CRYPTO_LOCK)
             g_openssl_locks[n].lock();
@@ -144,7 +145,7 @@ namespace {
 	    void setInput(TXFMBase *newInput) {
 	        input = newInput;
 	        if (newInput->getOutputType() != TXFMBase::BYTE_STREAM)
-		        throw XSECException(XSECException::TransformInputOutputFail, "OutputLog transform requires BYTE_STREAM input");
+		        throw XSECException(XSECException       ::TransformInputOutputFail, "OutputLog transform requires BYTE_STREAM input");
 	        keepComments = input->getCommentsStatus();
             m_log.debug("\n----- BEGIN SIGNATURE DEBUG -----\n");
         }
@@ -175,6 +176,27 @@ namespace {
         return nullptr;
     }
 
+    class BlockingXSECURIResolver : public XSECURIResolver {
+    public:
+    	BlockingXSECURIResolver() : m_log(Category::getInstance(XMLTOOLING_LOGCAT ".XMLSecurity")) {}
+    	~BlockingXSECURIResolver() {}
+
+    	BinInputStream* resolveURI(const XMLCh* uri) {
+    		auto_ptr_char temp(uri);
+    		m_log.warn("blocked remote resource retrieval by xml-security-c library: %s",
+    				temp.get() ? temp.get() : "(none)");
+    		return nullptr;
+    	}
+
+    	void setBaseURI(const XMLCh* uri) {}
+
+    	XSECURIResolver* clone() {
+    		return new BlockingXSECURIResolver();
+    	}
+
+    private:
+    	Category& m_log;
+    };
 #endif
 
 #ifdef WIN32
@@ -400,6 +422,7 @@ bool XMLToolingInternalConfig::init(bool deprecationSupport)
         XSECPlatformUtils::Initialise();
         XSECPlatformUtils::SetReferenceLoggingSink(TXFMOutputLogFactory);
         m_xsecProvider.reset(new XSECProvider());
+        m_xsecProvider->setDefaultURIResolver(new BlockingXSECURIResolver());
         log.debug("XML-Security %s initialization complete", XSEC_FULLVERSIONDOT);
 #endif
 

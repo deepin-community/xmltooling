@@ -79,7 +79,11 @@ namespace {
             return nmemb;
         string* cacheTag = reinterpret_cast<string*>(stream);
         const char* hdr = reinterpret_cast<char*>(ptr);
-        if (strncmp(hdr, "ETag:", 5) == 0) {
+#ifdef HAVE_STRCASECMP
+        if (!strncasecmp(hdr, "Etag:", 5)) {
+#else
+        if (!strnicmp(hdr, "Etag:", 5)) {
+#endif
             hdr += 5;
             size_t remaining = nmemb - 5;
             // skip leading spaces
@@ -105,7 +109,11 @@ namespace {
             if (!cacheTag->empty())
                 *cacheTag = "If-None-Match: " + *cacheTag;
         }
-        else if (cacheTag->empty() && strncmp(hdr, "Last-Modified:", 14) == 0) {
+#ifdef HAVE_STRCASECMP
+        else if (cacheTag->empty() && !strncasecmp(hdr, "Last-Modified:", 14)) {
+#else
+        else if (cacheTag->empty() && !strnicmp(hdr, "Last-Modified:", 14)) {
+#endif
             hdr += 14;
             size_t remaining = nmemb - 14;
             // skip leading spaces

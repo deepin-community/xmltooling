@@ -33,6 +33,8 @@
 #include "security/CredentialCriteria.h"
 #include "security/CredentialResolver.h"
 
+#include <xmltooling/security/SecurityHelper.h>
+
 #include <xsec/enc/XSECCryptoException.hpp>
 #include <xsec/framework/XSECException.hpp>
 #include <xsec/framework/XSECAlgorithmMapper.hpp>
@@ -48,6 +50,19 @@ using namespace xmltooling;
 using namespace xercesc;
 using boost::scoped_ptr;
 using namespace std;
+
+// Using static method for now to avoid ABI impact.
+
+namespace {
+
+    static void blockCipherReference(const EncryptedType& encryptedType) {
+        const CipherData* cipherData = encryptedType.getCipherData();
+        if (cipherData && cipherData->getCipherReference()) {
+            throw DecryptionException("CipherReference not supported");
+        }
+    }
+
+}
 
 
 Decrypter::Decrypter(
@@ -81,6 +96,8 @@ DOMDocumentFragment* Decrypter::decryptData(const EncryptedData& encryptedData, 
 {
     if (encryptedData.getDOM() == nullptr)
         throw DecryptionException("The object must be marshalled before decryption.");
+
+    blockCipherReference(encryptedData);
 
     XMLToolingInternalConfig& xmlconf = XMLToolingInternalConfig::getInternalConfig();
     if (m_requireAuthenticatedCipher) {
@@ -123,6 +140,8 @@ DOMDocumentFragment* Decrypter::decryptData(const EncryptedData& encryptedData, 
     if (!m_credResolver)
         throw DecryptionException("No CredentialResolver supplied to provide decryption keys.");
 
+    blockCipherReference(encryptedData);
+
     // Resolve a decryption key directly.
     vector<const Credential*> creds;
     int types = CredentialCriteria::KEYINFO_EXTRACTION_KEY | CredentialCriteria::KEYINFO_EXTRACTION_KEYNAMES;
@@ -151,7 +170,13 @@ DOMDocumentFragment* Decrypter::decryptData(const EncryptedData& encryptedData, 
             key = (*cred)->getPrivateKey();
             if (!key)
                 continue;
-            return decryptData(encryptedData, key);
+            DOMDocumentFragment* retval = decryptData(encryptedData, key);
+            if ((*cred)->getPublicKey()) {
+                std::string message = "encrypted with public key with SHA-1 fingerprint: " +
+                    SecurityHelper::getDEREncoding(*((*cred)->getPublicKey()), "SHA1");
+                logging::Category::getInstance(XMLTOOLING_LOGCAT ".Decrypter").debug(message.c_str());
+            }
+            return retval;
         }
         catch(const DecryptionException& ex) {
             logging::Category::getInstance(XMLTOOLING_LOGCAT ".Decrypter").warn(ex.what());
@@ -186,6 +211,8 @@ void Decrypter::decryptData(ostream& out, const EncryptedData& encryptedData, co
 {
     if (encryptedData.getDOM() == nullptr)
         throw DecryptionException("The object must be marshalled before decryption.");
+
+    blockCipherReference(encryptedData);
 
     XMLToolingInternalConfig& xmlconf = XMLToolingInternalConfig::getInternalConfig();
     if (m_requireAuthenticatedCipher) {
@@ -227,6 +254,8 @@ void Decrypter::decryptData(ostream& out, const EncryptedData& encryptedData, co
 {
     if (!m_credResolver)
         throw DecryptionException("No CredentialResolver supplied to provide decryption keys.");
+
+    blockCipherReference(encryptedData);
 
     // Resolve a decryption key directly.
     vector<const Credential*> creds;
@@ -295,6 +324,8 @@ XSECCryptoKey* Decrypter::decryptKey(const EncryptedKey& encryptedKey, const XML
     if (encryptedKey.getDOM()==nullptr)
         throw DecryptionException("The object must be marshalled before decryption.");
 
+    blockCipherReference(encryptedKey);
+
     const XSECAlgorithmHandler* handler;
     try {
         handler = XSECPlatformUtils::g_algorithmMapper->mapURIToHandler(algorithm);
@@ -354,6 +385,12 @@ XSECCryptoKey* Decrypter::decryptKey(const EncryptedKey& encryptedKey, const XML
                 int keySize = m_cipher->decryptKey(encryptedKey.getDOM(), buffer, 1024);
                 if (keySize<=0)
                     throw DecryptionException("Unable to decrypt key.");
+
+                if ((*cred)->getPublicKey()) {
+                    std::string message = "encrypted with pubkey sha1:" +
+                        SecurityHelper::getDEREncoding(*((*cred)->getPublicKey()), "SHA1");
+                    logging::Category::getInstance(XMLTOOLING_LOGCAT ".Decrypter").debug(message.c_str());
+                }
         
                 // Try to wrap the key.
                 return handler->createKeyForURI(algorithm, buffer, keySize);
@@ -392,3 +429,4 @@ XSECCryptoKey* Decrypter::decryptKey(const EncryptedKey& encryptedKey, const XML
         throw DecryptionException(string("XMLSecurity exception while generating key: ") + e.getMsg());
     }
 }
+
